@@ -24,13 +24,31 @@ class LabelEncoderRandom(TransformerMixin, BaseEstimator,):
         """
         y = column_or_1d(y, warn=True)
         self.classes_ = _unique(y)
-        n_classes = len(self.classes_)
-        encoded_classes = np.arange(n_classes)
-        np.random.shuffle(encoded_classes)
-        self.mapping_ = { orig_class:encoded_class for orig_class, encoded_class in zip ( self.classes_,  encoded_classes )}
-        self.inverse_mapping_ = { v:k for k, v in self.mapping_.items()}
+        
+        self.mapping_, self.inverse_mapping_ = LabelEncoderRandom.generate_random_mapping(y)
 
         return self
+    
+    @staticmethod
+    def generate_random_mapping(y):
+        """
+        Generates random mapping and inverse mapping
+
+        Arguments:
+        ----------
+        y: containing labels
+        Returns:
+        (mapping:dict, inverse_mapping:dict)
+        """
+        classes_ = _unique(y)
+        n_classes = len(classes_)
+        encoded_classes = np.arange(n_classes)
+        np.random.shuffle(encoded_classes)
+        mapping_ = { orig_class:encoded_class for orig_class, encoded_class in zip ( classes_,  encoded_classes )}
+        inverse_mapping_ = { v:k for k, v in mapping_.items()}
+
+        return mapping_, inverse_mapping_
+
 
     def fit_transform(self, y):
         """Fit label encoder and return encoded labels.
