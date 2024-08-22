@@ -7,7 +7,7 @@ from sklearn.datasets import load_iris
 import numpy as np
 from copy import deepcopy
 
-class LabelEncoderRandomTest(unittest.TestCase):
+class LabelEncoderManualTest(unittest.TestCase):
 
     
     def generate_sets(self,n_labels=10, n_objects = 1000 ,  dtypes = [int, str, np.uint, np.dtype('U10'), np.dtype('S5')]):
@@ -16,18 +16,49 @@ class LabelEncoderRandomTest(unittest.TestCase):
          for dtype in dtypes:
              yield y_pre.astype(dtype)
 
-    
-    def test_simple(self):
-        
-        for y in self.generate_sets():
 
-            rencoder = LabelEncoderRandom()
-            rencoder.fit(y)
+    def generate_sets_manu(self, base_labels=['A','B','C'], n_objects = 1000):
+        pass
 
-            mapping = rencoder.mapping_
+    def gen_rencoders(self):
+        return[
+            LabelEncoderRandom(),
+            LabelEncoderRandom(offset=1),
+            LabelEncoderRandom(offset=1<<16),
+        ]
+
+    def test_manual_numeric(self):
+        for y in self.generate_sets([1,3,5], dtypes=[int, np.uint]):
+
+            mapping = {
+                1:-1,
+                3:-3,
+                5:-5
+            }
 
             encoder = LabelEncoderManual(mapping)
-           
+        
+            y_mod = encoder.fit_transform(y)
+
+            self.assertIsNotNone(y_mod, "None Prediction")
+            self.assertIsInstance(y_mod, np.ndarray, "Not an numpy array")
+            self.assertTrue( len(np.unique(y)) == len(np.unique(y_mod)), "Wrong number of unique labels in encoded version")
+
+            y_inv = encoder.inverse_transform(y_mod)
+
+            self.assertTrue( np.all( y_inv == y ), "Wrong inverse transformation" )
+
+    def test_manual_str(self):
+        for y in self.generate_sets(['A', 'B', 'C'], dtypes=[np.str_]):
+
+            mapping = {
+                'A':'D',
+                'B':'E',
+                'C':'f',
+            }
+
+            encoder = LabelEncoderManual(mapping)
+        
             y_mod = encoder.fit_transform(y)
 
             self.assertIsNotNone(y_mod, "None Prediction")
@@ -39,21 +70,43 @@ class LabelEncoderRandomTest(unittest.TestCase):
             self.assertTrue( np.all( y_inv == y ), "Wrong inverse transformation" )
 
     
-            y_empty = encoder.transform([])
-            self.assertIsInstance(y_empty, np.ndarray, "Transforming empty data, wrong output type")
-            self.assertTrue( len(y_empty) == 0, "Transforming empty data, wrong output length")
+    def test_simple(self):
+        
+        for rencoder in self.gen_rencoders():
+            for y in self.generate_sets():
 
-            y_inv_empty = encoder.inverse_transform([])
-            self.assertIsInstance(y_inv_empty, np.ndarray, "Transforming empty data, wrong output type")
-            self.assertTrue( len(y_inv_empty) == 0, "Transforming empty data, wrong output length")
+                rencoder.fit(y)
 
-            try:
-                y_wr = encoder.inverse_transform([12345])
-                self.fail("ValueError should have been raised!")
-            except ValueError:
-                pass
-            except Exception as e:
-                self.fail("Wrong exception: {}".format(e))
+                mapping = rencoder.mapping_
+
+                encoder = LabelEncoderManual(mapping)
+            
+                y_mod = encoder.fit_transform(y)
+
+                self.assertIsNotNone(y_mod, "None Prediction")
+                self.assertIsInstance(y_mod, np.ndarray, "Not an numpy array")
+                self.assertTrue( len(np.unique(y)) == len(np.unique(y_mod)), "Wrong number of unique labels in encoded version")
+
+                y_inv = encoder.inverse_transform(y_mod)
+
+                self.assertTrue( np.all( y_inv == y ), "Wrong inverse transformation" )
+
+        
+                y_empty = encoder.transform([])
+                self.assertIsInstance(y_empty, np.ndarray, "Transforming empty data, wrong output type")
+                self.assertTrue( len(y_empty) == 0, "Transforming empty data, wrong output length")
+
+                y_inv_empty = encoder.inverse_transform([])
+                self.assertIsInstance(y_inv_empty, np.ndarray, "Transforming empty data, wrong output type")
+                self.assertTrue( len(y_inv_empty) == 0, "Transforming empty data, wrong output length")
+
+                try:
+                    y_wr = encoder.inverse_transform([12345])
+                    self.fail("ValueError should have been raised!")
+                except ValueError:
+                    pass
+                except Exception as e:
+                    self.fail("Wrong exception: {}".format(e))
 
     def test_wrong_mapping1(self):
 

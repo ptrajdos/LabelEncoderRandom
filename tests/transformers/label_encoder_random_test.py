@@ -11,6 +11,8 @@ class LabelEncoderRandomTest(unittest.TestCase):
     def get_encoders(self):
         return [
             LabelEncoderRandom(),
+            LabelEncoderRandom(offset=1),
+            LabelEncoderRandom(offset=1 << 16),
         ]
     
     def generate_sets(self,n_labels=10, n_objects = 1000 ,  dtypes = [int, str, np.uint, np.dtype('U10'), np.dtype('S5')]):

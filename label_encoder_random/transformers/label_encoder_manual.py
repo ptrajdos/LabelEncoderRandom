@@ -46,6 +46,7 @@ class LabelEncoderManual(TransformerMixin, BaseEstimator,):
         
         self.classes_ = tmp_classes
         self.inverse_mapping_ = inv_map
+        self.encoded_classes = np.sort( np.asanyarray([k for k in self.inverse_mapping_]))
         
 
         return self
@@ -108,7 +109,7 @@ class LabelEncoderManual(TransformerMixin, BaseEstimator,):
         if _num_samples(y) == 0:
             return np.array([])
 
-        diff = np.setdiff1d(y, np.arange(len(self.classes_)))
+        diff = np.setdiff1d(y, self.encoded_classes )
         if len(diff):
             raise ValueError("y contains previously unseen labels: %s" % str(diff))
         y = np.asarray(y)
