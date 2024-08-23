@@ -6,9 +6,10 @@ from sklearn.utils.validation import _num_samples, check_array, check_is_fitted
 
 class LabelEncoderRandom(TransformerMixin, BaseEstimator,):
 
-    def __init__(self,offset=0) -> None:
+    def __init__(self,offset=0, randomize=True) -> None:
         super().__init__()
         self.offset = offset
+        self.randomize = randomize
 
     def fit(self, y):
         """Fit label encoder.
@@ -26,13 +27,13 @@ class LabelEncoderRandom(TransformerMixin, BaseEstimator,):
         y = column_or_1d(y, warn=True)
         self.classes_ = _unique(y)
         
-        self.mapping_, self.inverse_mapping_ = LabelEncoderRandom.generate_random_mapping(y, self.offset)
+        self.mapping_, self.inverse_mapping_ = LabelEncoderRandom.generate_random_mapping(y, self.offset, self.randomize)
         self.encoded_classes = np.sort( np.asanyarray([k for k in self.inverse_mapping_]))
 
         return self
     
     @staticmethod
-    def generate_random_mapping(y, offset=0):
+    def generate_random_mapping(y, offset=0, randomize=True):
         """
         Generates random mapping and inverse mapping
 
@@ -45,7 +46,8 @@ class LabelEncoderRandom(TransformerMixin, BaseEstimator,):
         classes_ = _unique(y)
         n_classes = len(classes_)
         encoded_classes = np.arange(n_classes) + offset
-        np.random.shuffle(encoded_classes)
+        if randomize:
+            np.random.shuffle(encoded_classes)
         mapping_ = { orig_class:encoded_class for orig_class, encoded_class in zip ( classes_,  encoded_classes )}
         inverse_mapping_ = { v:k for k, v in mapping_.items()}
 

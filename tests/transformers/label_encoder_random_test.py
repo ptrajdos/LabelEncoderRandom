@@ -13,6 +13,9 @@ class LabelEncoderRandomTest(unittest.TestCase):
             LabelEncoderRandom(),
             LabelEncoderRandom(offset=1),
             LabelEncoderRandom(offset=1 << 16),
+            LabelEncoderRandom(randomize=False),
+            LabelEncoderRandom(randomize=False, offset=3),
+
         ]
     
     def generate_sets(self,n_labels=10, n_objects = 1000 ,  dtypes = [int, str, np.uint, np.dtype('U10'), np.dtype('S5')]):
@@ -40,8 +43,9 @@ class LabelEncoderRandomTest(unittest.TestCase):
                 self.assertTrue( np.all( y_inv == y ), "Wrong inverse transformation" )
 
         
-                y_mod_c = encoder_copy.fit_transform(y)
-                self.assertFalse( np.allclose(y_mod, y_mod_c), "Transformed label assignment is not random!")
+                if encoder.randomize:
+                    y_mod_c = encoder_copy.fit_transform(y)
+                    self.assertFalse( np.allclose(y_mod, y_mod_c), "Transformed label assignment is not random!")
 
                 y_empty = encoder.transform([])
                 self.assertIsInstance(y_empty, np.ndarray, "Transforming empty data, wrong output type")
