@@ -138,6 +138,34 @@ class LabelEncoderManualTest(unittest.TestCase):
         except Exception as e:
             self.fail("Unexpected exception {}".format(e))    
 
+    def test_mapping_larger_map(self):
+
+        y = [1,2,3,1,2,3,1,2,3]
+        map_1 = {1:"A", 2:"B", 3:"C", 4:"D", 5:"E" }
+        encoder = LabelEncoderManual(map_1)
+
+        y_mod = encoder.fit_transform(y)
+
+        self.assertIsNotNone(y_mod, "None Prediction")
+        self.assertIsInstance(y_mod, np.ndarray, "Not an numpy array")
+        self.assertTrue( len(np.unique(y)) == len(np.unique(y_mod)), "Wrong number of unique labels in encoded version")
+
+        y_inv = encoder.inverse_transform(y_mod)
+
+        self.assertTrue( np.all( y_inv == y ), "Wrong inverse transformation" )
+
+
+        y_i = ['D', "E", "E", "D"]
+        #This should work in that way
+        y_m = encoder.inverse_transform(y_i)
+
+        self.assertIsNotNone(y_m, "None Prediction")
+        self.assertIsInstance(y_m, np.ndarray, "Not an numpy array")
+        self.assertTrue( len(np.unique(y_i)) == len(np.unique(y_m)), "Wrong number of unique labels in encoded version")
+
+        
+        
+
 
 if __name__ == '__main__':
     unittest.main()

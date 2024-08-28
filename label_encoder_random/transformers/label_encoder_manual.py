@@ -15,6 +15,17 @@ class LabelEncoderManual(TransformerMixin, BaseEstimator,):
         """
         super().__init__()
         self.mapping_ = mapping
+        inv_map = { v:k for k, v in self.mapping_.items()}
+        self.inverse_mapping_ = inv_map
+        
+
+    def _check_mapping(self):
+        for k in self.mapping_:
+            ik = self.inverse_mapping_[self.mapping_[k]]
+            if k != ik:
+                raise ValueError("Mapping is not an one-to-one mapping!")
+
+        
 
     def fit(self, y):
         """Fit label encoder.
@@ -29,6 +40,9 @@ class LabelEncoderManual(TransformerMixin, BaseEstimator,):
         self : returns an instance of self.
             Fitted label encoder.
         """
+
+        self._check_mapping()
+
         y = column_or_1d(y, warn=True)
         tmp_classes = _unique(y)
 
@@ -39,13 +53,7 @@ class LabelEncoderManual(TransformerMixin, BaseEstimator,):
             raise ValueError("The number of classes inside y ({}) is greater than the number of labels inside mapping ({}) ".format(n_classes, n_encoded_classes ))
         
         
-        inv_map = { v:k for k, v in self.mapping_.items()}
-        n_unique_target_labels = len(inv_map)
-        if n_unique_target_labels  != n_encoded_classes:
-            raise ValueError("The mapping is not 'one-to-one' mapping")
-        
         self.classes_ = tmp_classes
-        self.inverse_mapping_ = inv_map
         self.encoded_classes = np.sort( np.asanyarray([k for k in self.inverse_mapping_]))
         
 
