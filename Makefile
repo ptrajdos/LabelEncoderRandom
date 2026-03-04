@@ -34,7 +34,7 @@ endif
 .PHONY: all clean test docs
 
 clean:
-	rm -rf ${VENV_SUBDIR}
+	rm -rf ${VENV_SUBDIR} pypackages
 
 venv:
 	${SYSPYTHON} -m venv --upgrade-deps ${VENV_OPTIONS} ${VENV_SUBDIR}
@@ -43,6 +43,7 @@ venv:
 
 pypackages: venv
 	${ACTIVATE}; ${PIP} install -e ${ROOTDIR} --prefer-binary --log ${INSTALL_LOG_FILE} -r ${REQ_FILE}
+	touch $@
 
 test: pypackages
 	mkdir -p ${LOGDIR}
