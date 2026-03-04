@@ -1,8 +1,15 @@
 import numpy as np
+import sklearn
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils import column_or_1d
 from sklearn.utils._encode import _unique, _encode
 from sklearn.utils.validation import _num_samples, check_array, check_is_fitted
+
+
+from packaging.version import parse as parse_version
+
+_SK_VERSION = parse_version(sklearn.__version__)
+
 
 class LabelEncoderRandom(TransformerMixin, BaseEstimator,):
 
@@ -125,4 +132,8 @@ class LabelEncoderRandom(TransformerMixin, BaseEstimator,):
         return {"X_types": ["1dlabels"]}
 
 
-    
+    if _SK_VERSION >= parse_version("1.6"):
+        def __sklearn_tags__(self):
+            tags = super().__sklearn_tags__()
+            tags.non_deterministic = False
+            return tags

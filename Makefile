@@ -15,7 +15,10 @@ COVERAGE = coverage
 UNITTEST_PARALLEL = unittest-parallel
 PDOC= pdoc3
 PYTHON=python
+SYSPYTHON=python
 PIP=pip
+PYTEST=pytest
+VENV_OPTIONS=
 
 LOGDIR=${ROOTDIR}/testlogs
 LOGFILE=${LOGDIR}/`date +'%y-%m-%d_%H-%M-%S'`.log
@@ -34,18 +37,25 @@ clean:
 	rm -rf ${VENV_SUBDIR}
 
 venv:
-	${PYTHON} -m venv ${VENV_SUBDIR}
+	${SYSPYTHON} -m venv --upgrade-deps ${VENV_OPTIONS} ${VENV_SUBDIR}
+	${ACTIVATE}; ${PYTHON} -m ${PIP} install wheel setuptools pypackages
+	
+
+pypackages: venv
 	${ACTIVATE}; ${PIP} install -e ${ROOTDIR} --prefer-binary --log ${INSTALL_LOG_FILE} -r ${REQ_FILE}
 
-
-test: venv
+test: pypackages
 	mkdir -p ${LOGDIR}
 	${ACTIVATE}; ${COVERAGE} run --branch  --source=${SRCDIR} -m unittest discover -p '*_test.py' -v -s ${TESTDIR} 2>&1 |tee -a ${LOGFILE}
 	${ACTIVATE}; ${COVERAGE} html --show-contexts
 
-test_parallel: venv
+test_parallel: pypackages
 	mkdir -p ${COVDIR}  ${LOGDIR}
 	${ACTIVATE}; ${UNITTEST_PARALLEL} --class-fixtures -v -t ${ROOTDIR} -s ${TESTDIR} -p '*_test.py' --coverage --coverage-rcfile ./.coveragerc --coverage-source ${SRCDIR} --coverage-html ${COVDIR} 2>&1 |tee -a ${LOGFILE}
 
-docs:
+docs: pypackages
 	${ACTIVATE}; $(PDOC) --force --html ${SRCDIR} --output-dir ${DOCS_DIR}
+
+profile: pypackages
+	
+	${ACTIVATE}; ${PYTEST} -n auto --cov-report=html --cov=${SRCDIR} --profile ${TESTDIR}
