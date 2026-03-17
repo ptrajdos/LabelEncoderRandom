@@ -4,6 +4,7 @@ ROOTDIR=$(realpath $(dir $(firstword $(MAKEFILE_LIST))))
 SRCDIR=${ROOTDIR}/label_encoder_random
 TESTDIR=${ROOTDIR}/tests
 COVDIR=${ROOTDIR}/htmlcov_p
+TOXDIR=${ROOTDIR}/.tox
 COVERAGERC=${ROOTDIR}/.coveragerc
 REQ_FILE=${ROOTDIR}/requirements_dev.txt
 INSTALL_LOG_FILE=${ROOTDIR}/install.log
@@ -19,6 +20,9 @@ SYSPYTHON=python
 PIP=pip
 PYTEST=pytest
 VENV_OPTIONS=
+TOX=tox
+
+TOX_CORES=auto
 
 LOGDIR=${ROOTDIR}/testlogs
 LOGFILE=${LOGDIR}/`date +'%y-%m-%d_%H-%M-%S'`.log
@@ -33,8 +37,19 @@ endif
 
 .PHONY: all clean test docs
 
-clean:
-	rm -rf ${VENV_SUBDIR} pypackages
+all:profile 
+
+clean: clean_pypackages clean_venv clean_tox
+	@echo "Cleaning up build artifacts, virtual environments, and test logs..."
+
+clean_pypackages:
+	rm -rf pypackages
+
+clean_venv:
+	rm -rf ${VENV_SUBDIR}
+
+clean_tox:
+	rm -rf ${TOXDIR}
 
 venv:
 	${SYSPYTHON} -m venv --upgrade-deps ${VENV_OPTIONS} ${VENV_SUBDIR}
@@ -60,3 +75,6 @@ docs: pypackages
 profile: pypackages
 	
 	${ACTIVATE}; ${PYTEST} -n auto --cov-report=html --cov=${SRCDIR} --profile ${TESTDIR}
+
+tox_check: pypackages
+	${ACTIVATE}; ${TOX} -p ${TOX_CORES} 
