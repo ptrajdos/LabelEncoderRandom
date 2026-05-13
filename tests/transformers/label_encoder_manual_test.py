@@ -1,11 +1,8 @@
 import unittest
-from sklearn.utils.estimator_checks import check_transformer_general, check_estimator
 from label_encoder_random.transformers.label_encoder_manual import LabelEncoderManual
 
 from label_encoder_random.transformers.label_encoder_random import LabelEncoderRandom
-from sklearn.datasets import load_iris
 import numpy as np
-from copy import deepcopy
 
 
 class LabelEncoderManualTest(unittest.TestCase):
@@ -131,7 +128,7 @@ class LabelEncoderManualTest(unittest.TestCase):
             enc = LabelEncoderManual(wrong_map_1)
             enc.fit(y)
             self.fail("ValueError should have been raised!")
-        except ValueError as ve:
+        except ValueError:
             print("Value error")
             pass
         except Exception as e:
@@ -146,7 +143,7 @@ class LabelEncoderManualTest(unittest.TestCase):
             enc = LabelEncoderManual(wrong_map_1)
             enc.fit(y)
             self.fail("ValueError should have been raised!")
-        except ValueError as ve:
+        except ValueError:
             print("Value error")
             pass
         except Exception as e:

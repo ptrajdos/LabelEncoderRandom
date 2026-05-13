@@ -2,8 +2,8 @@ import numpy as np
 import sklearn
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils import column_or_1d
-from sklearn.utils._encode import _unique, _encode
-from sklearn.utils.validation import _num_samples, check_array, check_is_fitted
+from sklearn.utils._encode import _unique
+from sklearn.utils.validation import _num_samples, check_is_fitted
 
 from packaging.version import parse as parse_version
 

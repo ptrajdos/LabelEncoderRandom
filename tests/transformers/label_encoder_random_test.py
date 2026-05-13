@@ -1,8 +1,6 @@
 import unittest
-from sklearn.utils.estimator_checks import check_transformer_general, check_estimator
 
 from label_encoder_random.transformers.label_encoder_random import LabelEncoderRandom
-from sklearn.datasets import load_iris
 import numpy as np
 from copy import deepcopy
 
