@@ -11,9 +11,11 @@ from packaging.version import parse as parse_version
 _SK_VERSION = parse_version(sklearn.__version__)
 
 
-class LabelEncoderRandom(TransformerMixin, BaseEstimator,):
-
-    def __init__(self,offset=0, randomize=True) -> None:
+class LabelEncoderRandom(
+    TransformerMixin,
+    BaseEstimator,
+):
+    def __init__(self, offset=0, randomize=True) -> None:
         super().__init__()
         self.offset = offset
         self.randomize = randomize
@@ -33,12 +35,16 @@ class LabelEncoderRandom(TransformerMixin, BaseEstimator,):
         """
         y = column_or_1d(y, warn=True)
         self.classes_ = _unique(y)
-        
-        self.mapping_, self.inverse_mapping_ = LabelEncoderRandom.generate_random_mapping(y, self.offset, self.randomize)
-        self.encoded_classes = np.sort( np.asanyarray([k for k in self.inverse_mapping_]))
+
+        self.mapping_, self.inverse_mapping_ = (
+            LabelEncoderRandom.generate_random_mapping(y, self.offset, self.randomize)
+        )
+        self.encoded_classes = np.sort(
+            np.asanyarray([k for k in self.inverse_mapping_])
+        )
 
         return self
-    
+
     @staticmethod
     def generate_random_mapping(y, offset=0, randomize=True):
         """
@@ -55,11 +61,13 @@ class LabelEncoderRandom(TransformerMixin, BaseEstimator,):
         encoded_classes = np.arange(n_classes) + offset
         if randomize:
             np.random.shuffle(encoded_classes)
-        mapping_ = { orig_class:encoded_class for orig_class, encoded_class in zip ( classes_,  encoded_classes )}
-        inverse_mapping_ = { v:k for k, v in mapping_.items()}
+        mapping_ = {
+            orig_class: encoded_class
+            for orig_class, encoded_class in zip(classes_, encoded_classes)
+        }
+        inverse_mapping_ = {v: k for k, v in mapping_.items()}
 
         return mapping_, inverse_mapping_
-
 
     def fit_transform(self, y):
         """Fit label encoder and return encoded labels.
@@ -74,7 +82,7 @@ class LabelEncoderRandom(TransformerMixin, BaseEstimator,):
         y : array-like of shape (n_samples,)
             Encoded labels.
         """
-        
+
         return self.fit(y).transform(y)
 
     def transform(self, y):
@@ -96,7 +104,7 @@ class LabelEncoderRandom(TransformerMixin, BaseEstimator,):
         if _num_samples(y) == 0:
             return np.array([])
 
-        encoded = np.asanyarray([self.mapping_[y_i] for y_i in y ])
+        encoded = np.asanyarray([self.mapping_[y_i] for y_i in y])
 
         return encoded
 
@@ -124,15 +132,15 @@ class LabelEncoderRandom(TransformerMixin, BaseEstimator,):
             raise ValueError("y contains previously unseen labels: %s" % str(diff))
         y = np.asarray(y)
 
-        inv_encoded = np.asanyarray([self.inverse_mapping_[y_i] for y_i in y ])
+        inv_encoded = np.asanyarray([self.inverse_mapping_[y_i] for y_i in y])
 
         return inv_encoded
 
     def _more_tags(self):
         return {"X_types": ["1dlabels"]}
 
-
     if _SK_VERSION >= parse_version("1.6"):
+
         def __sklearn_tags__(self):
             tags = super().__sklearn_tags__()
             tags.non_deterministic = False

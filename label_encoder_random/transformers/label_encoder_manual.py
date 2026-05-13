@@ -8,8 +8,12 @@ from sklearn.utils.validation import _num_samples, check_array, check_is_fitted
 from packaging.version import parse as parse_version
 
 _SK_VERSION = parse_version(sklearn.__version__)
-class LabelEncoderManual(TransformerMixin, BaseEstimator,):
 
+
+class LabelEncoderManual(
+    TransformerMixin,
+    BaseEstimator,
+):
     def __init__(self, mapping) -> None:
         """
         Arguments:
@@ -19,17 +23,14 @@ class LabelEncoderManual(TransformerMixin, BaseEstimator,):
         """
         super().__init__()
         self.mapping_ = mapping
-        inv_map = { v:k for k, v in self.mapping_.items()}
+        inv_map = {v: k for k, v in self.mapping_.items()}
         self.inverse_mapping_ = inv_map
-        
 
     def _check_mapping(self):
         for k in self.mapping_:
             ik = self.inverse_mapping_[self.mapping_[k]]
             if k != ik:
                 raise ValueError("Mapping is not an one-to-one mapping!")
-
-        
 
     def fit(self, y):
         """Fit label encoder.
@@ -51,15 +52,19 @@ class LabelEncoderManual(TransformerMixin, BaseEstimator,):
         tmp_classes = _unique(y)
 
         n_classes = len(tmp_classes)
-        encoded_classes = np.asanyarray( [k for k in self.mapping_])
+        encoded_classes = np.asanyarray([k for k in self.mapping_])
         n_encoded_classes = len(encoded_classes)
         if n_classes > n_encoded_classes:
-            raise ValueError("The number of classes inside y ({}) is greater than the number of labels inside mapping ({}) ".format(n_classes, n_encoded_classes ))
-        
-        
+            raise ValueError(
+                "The number of classes inside y ({}) is greater than the number of labels inside mapping ({}) ".format(
+                    n_classes, n_encoded_classes
+                )
+            )
+
         self.classes_ = tmp_classes
-        self.encoded_classes = np.sort( np.asanyarray([k for k in self.inverse_mapping_]))
-        
+        self.encoded_classes = np.sort(
+            np.asanyarray([k for k in self.inverse_mapping_])
+        )
 
         return self
 
@@ -76,7 +81,7 @@ class LabelEncoderManual(TransformerMixin, BaseEstimator,):
         y : array-like of shape (n_samples,)
             Encoded labels.
         """
-        
+
         return self.fit(y).transform(y)
 
     def transform(self, y):
@@ -98,7 +103,7 @@ class LabelEncoderManual(TransformerMixin, BaseEstimator,):
         if _num_samples(y) == 0:
             return np.array([])
 
-        encoded = np.asanyarray([self.mapping_[y_i] for y_i in y ])
+        encoded = np.asanyarray([self.mapping_[y_i] for y_i in y])
 
         return encoded
 
@@ -121,20 +126,20 @@ class LabelEncoderManual(TransformerMixin, BaseEstimator,):
         if _num_samples(y) == 0:
             return np.array([])
 
-        diff = np.setdiff1d(y, self.encoded_classes )
+        diff = np.setdiff1d(y, self.encoded_classes)
         if len(diff):
             raise ValueError("y contains previously unseen labels: %s" % str(diff))
         y = np.asarray(y)
 
-        inv_encoded = np.asanyarray([self.inverse_mapping_[y_i] for y_i in y ])
+        inv_encoded = np.asanyarray([self.inverse_mapping_[y_i] for y_i in y])
 
         return inv_encoded
 
     def _more_tags(self):
         return {"X_types": ["1dlabels"]}
 
-
     if _SK_VERSION >= parse_version("1.6"):
+
         def __sklearn_tags__(self):
             tags = super().__sklearn_tags__()
             tags.non_deterministic = False
