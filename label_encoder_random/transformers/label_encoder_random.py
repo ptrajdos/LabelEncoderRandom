@@ -42,6 +42,20 @@ class LabelEncoderRandom(
         self.encoded_classes = np.sort(
             np.asanyarray([k for k in self.inverse_mapping_])
         )
+        
+        # Create sorted arrays for efficient lookup in transform
+        sorted_indices = np.argsort(self.classes_)
+        self.sorted_classes_ = self.classes_[sorted_indices]
+        self.sorted_encoded_classes_ = np.asarray([self.mapping_[c] for c in self.sorted_classes_])
+        
+        # Create direct array lookup for inverse_transform
+        # encoded_classes are contiguous integers from offset to offset+n_classes-1
+        min_encoded = np.min(self.encoded_classes)
+        max_encoded = np.max(self.encoded_classes)
+        self._inverse_array = np.empty(max_encoded - min_encoded + 1, dtype=object)
+        for encoded, original in self.inverse_mapping_.items():
+            self._inverse_array[encoded - min_encoded] = original
+        self._min_encoded = min_encoded
 
         return self
 
@@ -104,7 +118,9 @@ class LabelEncoderRandom(
         if _num_samples(y) == 0:
             return np.array([])
 
-        encoded = np.asanyarray([self.mapping_[y_i] for y_i in y])
+        # Use searchsorted for efficient O(log n) lookup instead of dict
+        indices = np.searchsorted(self.sorted_classes_, y)
+        encoded = self.sorted_encoded_classes_[indices]
 
         return encoded
 
@@ -132,7 +148,9 @@ class LabelEncoderRandom(
             raise ValueError("y contains previously unseen labels: %s" % str(diff))
         y = np.asarray(y)
 
-        inv_encoded = np.asanyarray([self.inverse_mapping_[y_i] for y_i in y])
+        # Direct array indexing for O(1) lookup
+        indices = y - self._min_encoded
+        inv_encoded = self._inverse_array[indices]
 
         return inv_encoded
 
