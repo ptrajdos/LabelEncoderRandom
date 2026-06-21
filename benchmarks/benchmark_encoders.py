@@ -99,7 +99,7 @@ def run_benchmark_suite(n_samples_list, n_classes_list, dtypes):
                 
                 # Benchmark LabelEncoderRandom
                 try:
-                    random_encoder = LabelEncoderRandom(randomize=False)
+                    random_encoder = LabelEncoderRandom(randomize=False, disable_check=True)
                     random_encoder.fit(y_train)
                     
                     transform_time, transform_std = benchmark_transform(

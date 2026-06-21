@@ -15,10 +15,11 @@ class LabelEncoderRandom(
     TransformerMixin,
     BaseEstimator,
 ):
-    def __init__(self, offset=0, randomize=True) -> None:
+    def __init__(self, offset=0, randomize=True, disable_check=False) -> None:
         super().__init__()
         self.offset = offset
         self.randomize = randomize
+        self.disable_check = disable_check
 
     def fit(self, y):
         """Fit label encoder.
@@ -143,9 +144,10 @@ class LabelEncoderRandom(
         if _num_samples(y) == 0:
             return np.array([])
 
-        diff = np.setdiff1d(y, self.encoded_classes)
-        if len(diff):
-            raise ValueError("y contains previously unseen labels: %s" % str(diff))
+        if not self.disable_check:
+            diff = np.setdiff1d(y, self.encoded_classes)
+            if len(diff):
+                raise ValueError("y contains previously unseen labels: %s" % str(diff))
         y = np.asarray(y)
 
         # Direct array indexing for O(1) lookup
