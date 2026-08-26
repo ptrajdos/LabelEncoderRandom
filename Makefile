@@ -11,7 +11,9 @@ INSTALL_LOG_FILE=${ROOTDIR}/install.log
 VENV_SUBDIR=${ROOTDIR}/venv
 COVERAGERC=${ROOTDIR}/.coveragerc
 DOCS_DIR=${ROOTDIR}/docs
+UML_DIR=${ROOTDIR}/uml
 
+PYREVERSE=pyreverse
 COVERAGE = coverage
 UNITTEST_PARALLEL = unittest-parallel
 PDOC= pdoc3
@@ -71,6 +73,10 @@ test_parallel: pypackages
 
 docs: pypackages
 	${ACTIVATE}; $(PDOC) --force --html ${SRCDIR} --output-dir ${DOCS_DIR}
+
+uml: pypackages
+	mkdir -p ${UML_DIR}
+	${ACTIVATE}; ${PYREVERSE} -o svg -p label_encoder_random -d ${UML_DIR} ${SRCDIR}
 
 profile: pypackages
 	

@@ -15,6 +15,50 @@ class LabelEncoderRandom(
     TransformerMixin,
     BaseEstimator,
 ):
+    """Encode target labels with random integer values.
+
+    This transformer assigns a unique random integer to each unique label,
+    producing a non-sequential encoding. It is useful when the ordinal
+    relationship implied by sequential label encoding is undesirable.
+
+    Parameters
+    ----------
+    offset : int, default=0
+        Value added to every encoded label so that the encoded range
+        starts from ``offset`` instead of 0.
+    randomize : bool, default=True
+        If ``True``, the integer codes assigned to labels are randomly
+        shuffled. If ``False``, labels are encoded sequentially (like
+        the standard ``LabelEncoder``).
+    disable_check : bool, default=False
+        If ``True``, ``inverse_transform`` skips the validation that
+        checks whether all values in *y* were seen during fitting.
+
+    Attributes
+    ----------
+    classes_ : ndarray of shape (n_classes,)
+        Unique classes found during ``fit``.
+    mapping_ : dict
+        Dictionary mapping original labels to encoded integers.
+    inverse_mapping_ : dict
+        Dictionary mapping encoded integers back to original labels.
+    encoded_classes : ndarray of shape (n_classes,)
+        Sorted array of encoded integer values.
+
+    Examples
+    --------
+    >>> from label_encoder_random.transformers.label_encoder_random import LabelEncoderRandom
+    >>> le = LabelEncoderRandom(randomize=False)
+    >>> le.fit(["cat", "dog", "cat", "bird"])
+    LabelEncoderRandom(randomize=False)
+    >>> le.classes_
+    array(['bird', 'cat', 'dog'], dtype='<U4')
+    >>> le.transform(["cat", "dog"])
+    array([1, 2])
+    >>> le.inverse_transform([1, 2])
+    array(['cat', 'dog'], dtype=object)
+    """
+
     def __init__(self, offset=0, randomize=True, disable_check=False) -> None:
         super().__init__()
         self.offset = offset
@@ -62,14 +106,25 @@ class LabelEncoderRandom(
 
     @staticmethod
     def generate_random_mapping(y, offset=0, randomize=True):
-        """
-        Generates random mapping and inverse mapping
+        """Generate a random mapping and its inverse for the given labels.
 
-        Arguments:
+        Parameters
         ----------
-        y: containing labels
-        Returns:
-        (mapping:dict, inverse_mapping:dict)
+        y : array-like of shape (n_samples,)
+            Target labels from which unique classes are extracted.
+        offset : int, default=0
+            Value added to every encoded label so that the encoded range
+            starts from ``offset`` instead of 0.
+        randomize : bool, default=True
+            If ``True``, the integer codes are randomly shuffled;
+            otherwise they are assigned sequentially.
+
+        Returns
+        -------
+        mapping : dict
+            Dictionary mapping original labels to encoded integers.
+        inverse_mapping : dict
+            Dictionary mapping encoded integers back to original labels.
         """
         classes_ = _unique(y)
         n_classes = len(classes_)

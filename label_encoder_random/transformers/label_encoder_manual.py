@@ -14,13 +14,44 @@ class LabelEncoderManual(
     TransformerMixin,
     BaseEstimator,
 ):
+    """Encode target labels using a user-supplied mapping.
+
+    Unlike ``LabelEncoderRandom``, this transformer lets the caller
+    specify the exact correspondence between original labels and their
+    encoded integer values via a dictionary.
+
+    Parameters
+    ----------
+    mapping : dict
+        A dictionary defining the mapping between original labels
+        (keys) and encoded integer values (values). The mapping must
+        be one-to-one.
+
+    Attributes
+    ----------
+    classes_ : ndarray of shape (n_classes,)
+        Unique classes found during ``fit``.
+    mapping_ : dict
+        Dictionary mapping original labels to encoded integers
+        (same as the *mapping* parameter).
+    inverse_mapping_ : dict
+        Dictionary mapping encoded integers back to original labels.
+    encoded_classes : ndarray of shape (n_classes,)
+        Sorted array of encoded integer values.
+
+    Examples
+    --------
+    >>> from label_encoder_random.transformers.label_encoder_manual import LabelEncoderManual
+    >>> le = LabelEncoderManual({"cat": 10, "dog": 20, "bird": 30})
+    >>> le.fit(["cat", "dog", "cat", "bird"])
+    LabelEncoderManual(mapping={'cat': 10, 'dog': 20, 'bird': 30})
+    >>> le.transform(["cat", "dog"])
+    array([10, 20])
+    >>> le.inverse_transform([10, 20])
+    array(['cat', 'dog'], dtype='<U3')
+    """
+
     def __init__(self, mapping) -> None:
-        """
-        Arguments:
-        ----------
-        mapping - a dictionary like structure that defines mapping between old and new classes.
-                    Old classes are used as keys to the dictionary.
-        """
         super().__init__()
         self.mapping_ = mapping
         inv_map = {v: k for k, v in self.mapping_.items()}
