@@ -3,7 +3,15 @@ from label_encoder_random.transformers.label_encoder_manual import LabelEncoderM
 
 from label_encoder_random.transformers.label_encoder_random import LabelEncoderRandom
 import numpy as np
+from enum import IntEnum
 
+class TestEnum(IntEnum):
+    A = 10
+    B = 20
+    C = 30
+    D = 40
+    E = 50
+    F = 60
 
 class LabelEncoderManualTest(unittest.TestCase):
     def generate_sets(
@@ -28,7 +36,7 @@ class LabelEncoderManualTest(unittest.TestCase):
         ]
 
     def test_manual_numeric(self):
-        for y in self.generate_sets([1, 3, 5], dtypes=[int, np.uint]):
+        for y in self.generate_sets([1, 3, 5], dtypes=[int, np.uint, np.float64]):
             mapping = {1: -1, 3: -3, 5: -5}
 
             encoder = LabelEncoderManual(mapping)
@@ -45,6 +53,9 @@ class LabelEncoderManualTest(unittest.TestCase):
             y_inv = encoder.inverse_transform(y_mod)
 
             self.assertTrue(np.all(y_inv == y), "Wrong inverse transformation")
+            self.assertIsInstance(y_inv, np.ndarray, "Inv: Not an numpy array")
+            
+            
 
     def test_manual_str(self):
         for y in self.generate_sets(["A", "B", "C"], dtypes=[np.str_]):
@@ -68,6 +79,7 @@ class LabelEncoderManualTest(unittest.TestCase):
             y_inv = encoder.inverse_transform(y_mod)
 
             self.assertTrue(np.all(y_inv == y), "Wrong inverse transformation")
+            self.assertIsInstance(y_inv, np.ndarray, "Inv: Not an numpy array")
 
     def test_simple(self):
 
@@ -91,7 +103,7 @@ class LabelEncoderManualTest(unittest.TestCase):
                 y_inv = encoder.inverse_transform(y_mod)
 
                 self.assertTrue(np.all(y_inv == y), "Wrong inverse transformation")
-
+                self.assertIsInstance(y_inv, np.ndarray, "Inv: Not an numpy array")
                 y_empty = encoder.transform([])
                 self.assertIsInstance(
                     y_empty, np.ndarray, "Transforming empty data, wrong output type"
@@ -179,6 +191,44 @@ class LabelEncoderManualTest(unittest.TestCase):
             "Wrong number of unique labels in encoded version",
         )
 
+    def test_int_enum_a(self):
+        y = [1, 2, 3, 1, 2, 3, 1, 2, 3]
+        mapping = {1: TestEnum.A, 2: TestEnum.B, 3: TestEnum.C}
+        encoder = LabelEncoderManual(mapping)
+
+        y_mod = encoder.fit_transform(y)
+
+        self.assertIsNotNone(y_mod, "None Prediction")
+        self.assertIsInstance(y_mod, np.ndarray, "Not an numpy array")
+        self.assertTrue(
+            len(np.unique(y)) == len(np.unique(y_mod)),
+            "Wrong number of unique labels in encoded version",
+        )
+
+        y_inv = encoder.inverse_transform(y_mod)
+
+        self.assertTrue(np.all(y_inv == y), "Wrong inverse transformation")
+        self.assertIsInstance(y_inv, np.ndarray, "Inv: Not an numpy array")
+        
+
+    def test_int_enum_b(self):
+        y = [TestEnum.A, TestEnum.B, TestEnum.C, TestEnum.A, TestEnum.B, TestEnum.C]
+        mapping = {TestEnum.A: TestEnum.D, TestEnum.B: TestEnum.F, TestEnum.C: TestEnum.E}
+        encoder = LabelEncoderManual(mapping)
+
+        y_mod = encoder.fit_transform(y)
+
+        self.assertIsNotNone(y_mod, "None Prediction")
+        self.assertIsInstance(y_mod, np.ndarray, "Not an numpy array")
+        self.assertTrue(
+            len(np.unique(y)) == len(np.unique(y_mod)),
+            "Wrong number of unique labels in encoded version",
+        )
+
+        y_inv = encoder.inverse_transform(y_mod)
+
+        self.assertTrue(np.all(y_inv == y), "Wrong inverse transformation")
+        self.assertIsInstance(y_inv, np.ndarray, "Inv: Not an numpy array")
 
 if __name__ == "__main__":
     unittest.main()
