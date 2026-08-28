@@ -11,6 +11,7 @@ INSTALL_LOG_FILE=${ROOTDIR}/install.log
 VENV_SUBDIR=${ROOTDIR}/venv
 COVERAGERC=${ROOTDIR}/.coveragerc
 DOCS_DIR=${ROOTDIR}/docs
+DOCS_ZIP=${ROOTDIR}/LabelEncoderRandom_docs.zip
 UML_DIR=${ROOTDIR}/uml
 
 PYREVERSE=pyreverse
@@ -74,6 +75,8 @@ test_parallel: pypackages
 docs: pypackages
 	${ACTIVATE}; $(PDOC) --force --html ${SRCDIR} --output-dir ${DOCS_DIR}
 
+docs_zip: docs uml
+	zip -r ${DOCS_ZIP} ${DOCS_DIR}
 uml: pypackages
 	mkdir -p ${UML_DIR}
 	${ACTIVATE}; ${PYREVERSE} -o svg -p label_encoder_random -d ${UML_DIR} ${SRCDIR}
